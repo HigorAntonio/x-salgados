@@ -8,10 +8,10 @@ if (!process.env.DATABASE_URL) {
 const commonConfig = {
   client: 'pg',
   migrations: {
-    directory: './database/migrations',
+    directory: './src/database/migrations',
   },
   seeds: {
-    directory: './database/seeds',
+    directory: './src/database/seeds',
   },
 };
 

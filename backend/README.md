@@ -8,6 +8,8 @@ API REST para o sistema de gestão X Salgados.
 - **Express 5** - Framework web
 - **PostgreSQL** - Banco de dados relacional
 - **Knex.js** - Query builder e migrations
+- **Swagger/OpenAPI** - Documentação da API
+- **Jest & Supertest** - Testes unitários e de integração
 
 ## Pré-requisitos
 
@@ -52,7 +54,7 @@ npm run migrate
 
 ## Estrutura do Banco de Dados
 
-O schema completo está definido em `database/migrations/001_initial.js` e inclui:
+O schema completo está definido em `src/database/migrations/001_initial.js` e inclui:
 
 - **regioes** - Clusters geográficos (cidade/bairro/rua)
 - **users** - Usuários do sistema (RBAC: Admin, Comprador, Motorista)
@@ -79,6 +81,20 @@ Verifica a saúde da aplicação e conexão com o banco de dados.
   "status": "ok",
   "timestamp": "2026-03-03T10:30:00.000Z"
 }
+```
+
+### Documentação da API (Swagger)
+
+A documentação completa da API está disponível via Swagger UI:
+
+```
+http://localhost:3000/api-docs
+```
+
+Você também pode acessar a especificação OpenAPI em formato JSON:
+
+```
+http://localhost:3000/api-docs.json
 ```
 
 ## Desenvolvimento
@@ -133,14 +149,56 @@ O relatório HTML é gerado em `coverage/lcov-report/index.html`.
 
 Os testes utilizam mocks do módulo de banco de dados para evitar dependência de conexões reais durante a execução dos testes.
 
+## Documentação da API
+
+A API utiliza **Swagger/OpenAPI 3.0** para documentação interativa.
+
+### Acessar a Documentação
+
+Após iniciar o servidor, acesse:
+
+- **Swagger UI (interativa)**: http://localhost:3000/api-docs
+- **OpenAPI JSON**: http://localhost:3000/api-docs.json
+
+### Documentar Novos Endpoints
+
+Para documentar um novo endpoint, adicione comentários JSDoc com anotações Swagger acima da rota:
+
+```javascript
+/**
+ * @swagger
+ * /api/exemplo:
+ *   get:
+ *     summary: Descrição breve do endpoint
+ *     tags: [NomeDaTag]
+ *     responses:
+ *       200:
+ *         description: Sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.get('/api/exemplo', (req, res) => {
+  res.json({ message: 'Exemplo' });
+});
+```
+
+A configuração do Swagger está em [src/config/swagger.js](src/config/swagger.js) e inclui:
+- Schemas reutilizáveis
+- Respostas de erro padrão
+- Configuração de autenticação JWT (preparado para implementação futura)
+- Tags para organização dos endpoints
+
 ## Estrutura de Arquivos
 
 ```
 backend/
-├── database/           # Banco de dados
-│   ├── migrations/     # Migrations do banco de dados
-│   │   └── 001_initial.js
-│   └── seeds/          # Seeds para popular o banco
+├── docs/               # Documentação adicional
+│   └── SWAGGER_EXAMPLES.md
 ├── src/
 │   ├── __tests__/      # Testes unitários e de integração
 │   │   ├── setup.js
@@ -148,6 +206,12 @@ backend/
 │   │   └── routes.test.js
 │   ├── __mocks__/      # Mocks para testes
 │   │   └── db.js
+│   ├── config/         # Arquivos de configuração
+│   │   └── swagger.js  # Configuração do Swagger/OpenAPI
+│   ├── database/       # Banco de dados
+│   │   ├── migrations/ # Migrations do banco de dados
+│   │   │   └── 001_initial.js
+│   │   └── seeds/      # Seeds para popular o banco
 │   ├── app.js          # Configuração do Express e middlewares
 │   ├── routes.js       # Definição de rotas da API
 │   ├── db.js           # Configuração do Knex
@@ -165,6 +229,7 @@ backend/
 O projeto utiliza **ES Modules** (type: "module") e segue uma arquitetura separando responsabilidades:
 
 - **app.js**: Contém a configuração do Express, middlewares e error handlers
-- **routes.js**: Define todas as rotas da API
+- **routes.js**: Define todas as rotas da API com documentação Swagger
 - **server.js**: Responsável por inicializar o servidor, verificar conexão DB e gerenciar shutdown
 - **db.js**: Exporta uma instância configurada do Knex para uso em toda aplicação
+- **config/swagger.js**: Configuração do Swagger/OpenAPI para documentação da API

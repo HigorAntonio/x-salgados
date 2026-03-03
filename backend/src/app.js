@@ -1,11 +1,25 @@
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
 import routes from './routes.js';
+import swaggerSpec from './config/swagger.js';
 
 // Initialize Express app
 const app = express();
 
 // Middleware
 app.use(express.json());
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'X Salgados API Docs',
+}));
+
+// Swagger JSON endpoint
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // Routes
 app.use(routes);

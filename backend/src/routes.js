@@ -3,7 +3,32 @@ import knex from './db.js';
 
 const router = express.Router();
 
-// Health check endpoint
+/**
+ * @swagger
+ * /status:
+ *   get:
+ *     summary: Verifica o status da API e a conexão com o banco de dados
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: API funcionando corretamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthStatus'
+ *             example:
+ *               status: ok
+ *               timestamp: '2026-03-03T10:00:00.000Z'
+ *       500:
+ *         description: Erro de conexão com o banco de dados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthStatus'
+ *             example:
+ *               status: error
+ *               message: 'Database connection failed'
+ */
 router.get('/status', async (req, res) => {
   try {
     // Simple knex raw query to ensure DB connection

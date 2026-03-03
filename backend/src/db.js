@@ -1,4 +1,8 @@
-const knexConfig = require("../knexfile");
-const knex = require("knex")(knexConfig.development);
+import knexLib from 'knex';
+import knexConfig from '../knexfile.js';
 
-module.exports = knex;
+// Use NODE_ENV to determine which config to use (defaults to 'development')
+const environment = process.env.NODE_ENV || 'development';
+const knex = knexLib(knexConfig[environment]);
+
+export default knex;

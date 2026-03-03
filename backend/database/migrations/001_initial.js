@@ -1,4 +1,15 @@
-exports.up = function(knex) {
+/**
+ * Migration: Initial Database Schema
+ * 
+ * Cria todas as tabelas base do sistema X Salgados conforme especificado em REQUISITOS.md
+ * 
+ * NOTA IMPORTANTE: A tabela 'pedidos' atualmente armazena apenas o total_de_volumes.
+ * Para rastrear QUAIS produtos específicos compõem cada pedido, será necessário criar
+ * uma tabela adicional 'pedidos_itens' em uma migração futura, relacionando:
+ * pedidos.id -> pedidos_itens.pedido_id -> produtos.id
+ */
+
+export function up(knex) {
   return knex.schema
     // 1. REGIOES (Clusters Geográficos)
     .createTable('regioes', (table) => {
@@ -27,6 +38,10 @@ exports.up = function(knex) {
       table.decimal('lat', 10, 8).notNullable(); // Precisão para GPS
       table.decimal('lng', 11, 8).notNullable();
       table.timestamps(true, true);
+
+      // Índices para otimizar buscas
+      table.index('user_id');
+      table.index('regiao_id');
     })
 
     // 4. PRODUTOS (Salgados)
@@ -58,6 +73,11 @@ exports.up = function(knex) {
       table.decimal('custo_combustivel_estimado', 10, 2);
       table.enum('status', ['PLANEJADO', 'EM_TRANSITO', 'CONCLUIDO']).defaultTo('PLANEJADO');
       table.timestamps(true, true);
+
+      // Índices para otimizar buscas
+      table.index('veiculo_id');
+      table.index('motorista_id');
+      table.index(['data_saida', 'status']); // Busca conjunta comum
     })
 
     // 7. PEDIDOS
@@ -70,6 +90,11 @@ exports.up = function(knex) {
       table.date('data_entrega').notNullable();
       table.enum('status', ['PENDENTE', 'FATURADO', 'EM_ROTA', 'ENTREGUE', 'CANCELADO']).defaultTo('PENDENTE');
       table.timestamps(true, true);
+
+      // Índices para otimizar buscas
+      table.index('cliente_id');
+      table.index('carregamento_id');
+      table.index(['data_entrega', 'status']); // Busca conjunta comum
     })
 
     // 8. AGENDA REGIONAL
@@ -77,10 +102,13 @@ exports.up = function(knex) {
       table.increments('id').primary();
       table.integer('regiao_id').unsigned().references('id').inTable('regioes').onDelete('CASCADE');
       table.enum('dia_semana', ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']).notNullable();
-    });
-};
 
-exports.down = function(knex) {
+      // Índice composto para buscar rapidamente os dias de entrega por região
+      table.index(['regiao_id', 'dia_semana']);
+    });
+}
+
+export function down(knex) {
   return knex.schema
     .dropTableIfExists('agenda_regional')
     .dropTableIfExists('pedidos')
@@ -90,4 +118,4 @@ exports.down = function(knex) {
     .dropTableIfExists('enderecos')
     .dropTableIfExists('users')
     .dropTableIfExists('regioes');
-};
+}

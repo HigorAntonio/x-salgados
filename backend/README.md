@@ -46,6 +46,9 @@ npm run migrate
 - `npm run migrate` - Executa as migrations pendentes
 - `npm run migrate:rollback` - Reverte a última migration
 - `npm run migrate:status` - Mostra o status das migrations
+- `npm test` - Executa os testes unitários
+- `npm run test:watch` - Executa os testes em modo watch
+- `npm run test:coverage` - Executa os testes e gera relatório de cobertura
 
 ## Estrutura do Banco de Dados
 
@@ -89,6 +92,47 @@ O servidor utiliza `--watch` flag do Node.js para reiniciar automaticamente quan
 - Execute migrations antes de iniciar o desenvolvimento
 - Teste a conexão com o banco usando `/status`
 
+## Testes
+
+O projeto utiliza **Jest** e **Supertest** para testes unitários e de integração.
+
+### Executar Testes
+
+```bash
+# Executar todos os testes
+npm test
+
+# Executar em modo watch (útil durante desenvolvimento)
+npm run test:watch
+
+# Gerar relatório de cobertura
+npm run test:coverage
+```
+
+### Estrutura de Testes
+
+```
+src/
+└── __tests__/
+    ├── setup.js         # Configuração global dos testes
+    ├── app.test.js      # Testes da configuração do Express
+    └── routes.test.js   # Testes dos endpoints da API
+```
+
+### Cobertura de Código
+
+O projeto mantém alta cobertura de testes. Para visualizar o relatório de cobertura:
+
+```bash
+npm run test:coverage
+```
+
+O relatório HTML é gerado em `coverage/lcov-report/index.html`.
+
+### Mocking de Dependências
+
+Os testes utilizam mocks do módulo de banco de dados para evitar dependência de conexões reais durante a execução dos testes.
+
 ## Estrutura de Arquivos
 
 ```
@@ -98,10 +142,19 @@ backend/
 │   │   └── 001_initial.js
 │   └── seeds/          # Seeds para popular o banco
 ├── src/
-│   ├── app.js          # Configuração do Express e rotas
+│   ├── __tests__/      # Testes unitários e de integração
+│   │   ├── setup.js
+│   │   ├── app.test.js
+│   │   └── routes.test.js
+│   ├── __mocks__/      # Mocks para testes
+│   │   └── db.js
+│   ├── app.js          # Configuração do Express e middlewares
+│   ├── routes.js       # Definição de rotas da API
 │   ├── db.js           # Configuração do Knex
 │   └── server.js       # Inicialização do servidor
+├── coverage/           # Relatórios de cobertura (gerado)
 ├── .env.example        # Exemplo de variáveis de ambiente
+├── jest.config.js      # Configuração do Jest
 ├── knexfile.js         # Configuração do Knex
 ├── package.json        # Dependências e scripts
 └── README.md
@@ -111,6 +164,7 @@ backend/
 
 O projeto utiliza **ES Modules** (type: "module") e segue uma arquitetura separando responsabilidades:
 
-- **app.js**: Contém a configuração do Express, middlewares, rotas e error handlers
+- **app.js**: Contém a configuração do Express, middlewares e error handlers
+- **routes.js**: Define todas as rotas da API
 - **server.js**: Responsável por inicializar o servidor, verificar conexão DB e gerenciar shutdown
 - **db.js**: Exporta uma instância configurada do Knex para uso em toda aplicação

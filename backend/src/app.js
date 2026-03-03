@@ -1,5 +1,5 @@
 import express from 'express';
-import knex from './db.js';
+import routes from './routes.js';
 
 // Initialize Express app
 const app = express();
@@ -7,20 +7,8 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// Health check endpoint
-app.get('/status', async (req, res) => {
-  try {
-    // Simple knex raw query to ensure DB connection
-    await knex.raw('SELECT 1');
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  } catch (error) {
-    console.error('Health check failed:', error.message);
-    res.status(500).json({ 
-      status: 'error', 
-      message: 'Database connection failed' 
-    });
-  }
-});
+// Routes
+app.use(routes);
 
 // 404 handler - Must be after all routes
 app.use((req, res) => {

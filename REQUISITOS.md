@@ -80,11 +80,61 @@ O sistema visa automatizar a operação da empresa X Salgados, substituindo o fl
 
 ### Modelo de Dados Expandido
 
-- **Users:** `id, email, password, role, lat, lng, bairro_id`.
-- **Produtos:** `id, nome, qtd_estoque, caixas_por_unidade`.
-- **Veículos:** `id, tipo, capacidade_caixas, consumo_medio, autonomia_max`.
-- **Pedidos:** `id, cliente_id, total_caixas, status, data_entrega, rota_id`.
-- **AgendaRegional:** `id, bairro_id, dia_semana`.
+#### Tabela: regioes (Clusters Geográficos)
+- id: PK (Incremental)
+- cidade: String (Not Null)
+- bairro: String (Not Null)
+- rua: String (Optional)
+
+#### Tabela: users (RBAC)
+- id: PK (Incremental)
+- email: String (Unique, Not Null)
+- password: String (Hash, Not Null)
+- role: Enum ('ADMIN', 'COMPRADOR', 'MOTORISTA')
+
+#### Tabela: enderecos (Geocodificação)
+- id: PK (Incremental)
+- user_id: FK -> users.id (On Delete Cascade)
+- regiao_id: FK -> regioes.id
+- descricao: String (Ex: Nome da loja ou referência)
+- lat: Decimal (10, 8) - Latitude para GPS
+- lng: Decimal (11, 8) - Longitude para GPS
+
+#### Tabela: produtos (Salgados)
+- id: PK (Incremental)
+- nome: String (Not Null)
+- qtd_estoque: Integer (Default 0)
+- volumes_por_unidade: Integer (Espaço ocupado em caixas padrão)
+
+#### Tabela: veiculos (Frota)
+- id: PK (Incremental)
+- tipo: String (Ex: "Van", "Caminhão 3/4")
+- capacidade_em_volumes: Integer (Not Null)
+- consumo_medio: Decimal (5, 2) - em km/l
+- autonomia_max: Integer - em km
+
+#### Tabela: carregamentos (Manifesto de Carga/Rotas)
+- id: PK (Incremental)
+- veiculo_id: FK -> veiculos.id
+- motorista_id: FK -> users.id
+- data_saida: Date (Not Null)
+- distancia_total_estimada: Decimal (8, 2)
+- custo_combustivel_estimado: Decimal (10, 2)
+- status: Enum ('PLANEJADO', 'EM_TRANSITO', 'CONCLUIDO')
+
+#### Tabela: pedidos (Vendas)
+- id: PK (Incremental)
+- cliente_id: FK -> users.id
+- endereco_id: FK -> enderecos.id
+- carregamento_id: FK -> carregamentos.id (Nullable)
+- total_de_volumes: Integer (Calculado na venda)
+- data_entrega: Date (Conforme Agenda Regional)
+- status: Enum ('PENDENTE', 'FATURADO', 'EM_ROTA', 'ENTREGUE', 'CANCELADO')
+
+#### Tabela: agenda_regional (Logística)
+- id: PK (Incremental)
+- regiao_id: FK -> regioes.id (On Delete Cascade)
+- dia_semana: Enum ('SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO')
 
 ---
 

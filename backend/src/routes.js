@@ -2,6 +2,7 @@ import express from "express";
 import knex from "./db.js";
 import authRoutes from "./routes/authRoutes.js";
 import exampleRoutes from "./routes/exampleRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const router = express.Router();
 
@@ -50,5 +51,8 @@ router.use("/auth", authRoutes);
 
 // Rotas de exemplo (protegidas e públicas)
 router.use("/examples", exampleRoutes);
+
+// Rotas de produtos
+router.use("/products", productRoutes);
 
 export default router;

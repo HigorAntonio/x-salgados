@@ -1,5 +1,7 @@
-import express from 'express';
-import knex from './db.js';
+import express from "express";
+import knex from "./db.js";
+import authRoutes from "./routes/authRoutes.js";
+import exampleRoutes from "./routes/exampleRoutes.js";
 
 const router = express.Router();
 
@@ -29,18 +31,24 @@ const router = express.Router();
  *               status: error
  *               message: 'Database connection failed'
  */
-router.get('/status', async (req, res) => {
+router.get("/status", async (req, res) => {
   try {
     // Simple knex raw query to ensure DB connection
-    await knex.raw('SELECT 1');
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    await knex.raw("SELECT 1");
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
   } catch (error) {
-    console.error('Health check failed:', error.message);
-    res.status(500).json({ 
-      status: 'error', 
-      message: 'Database connection failed' 
+    console.error("Health check failed:", error.message);
+    res.status(500).json({
+      status: "error",
+      message: "Database connection failed",
     });
   }
 });
+
+// Rotas de autenticação
+router.use("/auth", authRoutes);
+
+// Rotas de exemplo (protegidas e públicas)
+router.use("/examples", exampleRoutes);
 
 export default router;

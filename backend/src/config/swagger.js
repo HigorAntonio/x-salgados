@@ -1,135 +1,140 @@
-import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerJsdoc from "swagger-jsdoc";
 
 const options = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'X Salgados API',
-      version: '1.0.0',
-      description: 'API para gestão de pedidos, estoque, frota e roteirização da empresa X Salgados',
+      title: "X Salgados API",
+      version: "1.0.0",
+      description:
+        "API para gestão de pedidos, estoque, frota e roteirização da empresa X Salgados",
       contact: {
-        name: 'X Salgados',
+        name: "X Salgados",
       },
     },
     servers: [
       {
-        url: '/',
-        description: 'Servidor atual',
+        url: "/",
+        description: "Servidor atual",
       },
     ],
     tags: [
       {
-        name: 'Health',
-        description: 'Endpoints de verificação de saúde da aplicação',
+        name: "Health",
+        description: "Endpoints de verificação de saúde da aplicação",
       },
       {
-        name: 'Auth',
-        description: 'Autenticação e autorização',
+        name: "Auth",
+        description: "Autenticação e autorização",
       },
       {
-        name: 'Users',
-        description: 'Gestão de usuários',
+        name: "Examples",
+        description: "Exemplos de rotas protegidas e públicas",
       },
       {
-        name: 'Products',
-        description: 'Gestão de produtos e estoque',
+        name: "Users",
+        description: "Gestão de usuários",
       },
       {
-        name: 'Orders',
-        description: 'Gestão de pedidos',
+        name: "Products",
+        description: "Gestão de produtos e estoque",
       },
       {
-        name: 'Fleet',
-        description: 'Gestão de frota e veículos',
+        name: "Orders",
+        description: "Gestão de pedidos",
       },
       {
-        name: 'Routes',
-        description: 'Roteirização e carregamentos',
+        name: "Fleet",
+        description: "Gestão de frota e veículos",
       },
       {
-        name: 'Regions',
-        description: 'Gestão de regiões e agenda regional',
+        name: "Routes",
+        description: "Roteirização e carregamentos",
+      },
+      {
+        name: "Regions",
+        description: "Gestão de regiões e agenda regional",
       },
     ],
     components: {
       securitySchemes: {
         bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
         },
       },
       schemas: {
         Error: {
-          type: 'object',
+          type: "object",
           properties: {
             error: {
-              type: 'string',
-              example: 'Error message',
+              type: "string",
+              example: "Error message",
             },
             path: {
-              type: 'string',
-              example: '/api/endpoint',
+              type: "string",
+              example: "/api/endpoint",
             },
           },
         },
         HealthStatus: {
-          type: 'object',
+          type: "object",
           properties: {
             status: {
-              type: 'string',
-              enum: ['ok', 'error'],
-              example: 'ok',
+              type: "string",
+              enum: ["ok", "error"],
+              example: "ok",
             },
             timestamp: {
-              type: 'string',
-              format: 'date-time',
-              example: '2026-03-03T10:00:00.000Z',
+              type: "string",
+              format: "date-time",
+              example: "2026-03-03T10:00:00.000Z",
             },
             message: {
-              type: 'string',
-              example: 'Database connection failed',
+              type: "string",
+              example: "Database connection failed",
             },
           },
         },
       },
       responses: {
         UnauthorizedError: {
-          description: 'Token de acesso ausente ou inválido',
+          description: "Token de acesso ausente ou inválido",
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                $ref: '#/components/schemas/Error',
+                $ref: "#/components/schemas/Error",
               },
             },
           },
         },
         NotFoundError: {
-          description: 'Recurso não encontrado',
+          description: "Recurso não encontrado",
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                $ref: '#/components/schemas/Error',
+                $ref: "#/components/schemas/Error",
               },
             },
           },
         },
         ValidationError: {
-          description: 'Erro de validação',
+          description: "Erro de validação",
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                $ref: '#/components/schemas/Error',
+                $ref: "#/components/schemas/Error",
               },
             },
           },
         },
         InternalServerError: {
-          description: 'Erro interno do servidor',
+          description: "Erro interno do servidor",
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                $ref: '#/components/schemas/Error',
+                $ref: "#/components/schemas/Error",
               },
             },
           },
@@ -137,7 +142,7 @@ const options = {
       },
     },
   },
-  apis: ['./src/routes.js', './src/routes/**/*.js'], // Arquivos onde as anotações Swagger estarão
+  apis: ["./src/routes.js", "./src/routes/**/*.js"], // Arquivos onde as anotações Swagger estarão
 };
 
 const swaggerSpec = swaggerJsdoc(options);

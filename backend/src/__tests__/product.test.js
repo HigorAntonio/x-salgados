@@ -133,7 +133,7 @@ const mockKnex = jest.fn((table) => {
           },
         ]),
       };
-      
+
       return whereChain;
     });
   }
@@ -284,7 +284,7 @@ describe("Product Endpoints", () => {
     it("should create a new product when authenticated as ADMIN", async () => {
       // Garantir que o produto não existe
       mockProductExists = false;
-      
+
       // Mock para usuário ADMIN autenticado
       mockSupabase.auth.getUser.mockResolvedValueOnce({
         data: {
@@ -337,7 +337,7 @@ describe("Product Endpoints", () => {
       // Configurar mock para usuário COMPRADOR
       mockUserRole = "COMPRADOR";
       mockProductExists = false;
-      
+
       // Mock para usuário COMPRADOR
       mockSupabase.auth.getUser.mockResolvedValueOnce({
         data: {
@@ -398,7 +398,7 @@ describe("Product Endpoints", () => {
     it("should return 409 when product name already exists", async () => {
       // Configurar mock para produto já existente
       mockProductExists = true;
-      
+
       mockSupabase.auth.getUser.mockResolvedValueOnce({
         data: {
           user: {
@@ -562,7 +562,7 @@ describe("Product Endpoints", () => {
     it("should return 404 when product not found", async () => {
       // Configurar mock para produto não encontrado
       mockProductToReturn = null;
-      
+
       mockSupabase.auth.getUser.mockResolvedValueOnce({
         data: {
           user: {

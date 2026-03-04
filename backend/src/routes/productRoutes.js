@@ -13,7 +13,7 @@ const router = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Produtos
+ *   name: Products
  *   description: Gerenciamento de produtos (salgados)
  */
 
@@ -23,7 +23,7 @@ const router = express.Router();
  *   get:
  *     summary: Lista todos os produtos
  *     description: Retorna todos os produtos cadastrados no sistema com paginação. Rota pública.
- *     tags: [Produtos]
+ *     tags: [Products]
  *     parameters:
  *       - in: query
  *         name: page
@@ -108,7 +108,7 @@ router.get("/", getAll);
  *   get:
  *     summary: Busca um produto por ID
  *     description: Retorna os detalhes de um produto específico. Rota pública.
- *     tags: [Produtos]
+ *     tags: [Products]
  *     parameters:
  *       - in: path
  *         name: id
@@ -163,7 +163,7 @@ router.get("/:id", getById);
  *   post:
  *     summary: Cria um novo produto
  *     description: Cadastra um novo produto no sistema. Restrito a usuários ADMIN.
- *     tags: [Produtos]
+ *     tags: [Products]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -229,7 +229,7 @@ router.post("/", authenticate, authorize(["ADMIN"]), create);
  *   put:
  *     summary: Atualiza um produto existente
  *     description: Atualiza os dados de um produto. Restrito a usuários ADMIN.
- *     tags: [Produtos]
+ *     tags: [Products]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -298,7 +298,7 @@ router.put("/:id", authenticate, authorize(["ADMIN"]), update);
  *   delete:
  *     summary: Remove um produto
  *     description: Remove um produto do sistema. Restrito a usuários ADMIN.
- *     tags: [Produtos]
+ *     tags: [Products]
  *     security:
  *       - bearerAuth: []
  *     parameters:

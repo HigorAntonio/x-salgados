@@ -68,10 +68,11 @@ export async function up(knex) {
         table.index("regiao_id");
       })
 
-      // 5. Recriar PRODUTOS (sem alterações)
+      // 5. Recriar PRODUTOS com coluna descrição
       .createTable("produtos", (table) => {
         table.increments("id").primary();
         table.string("nome").notNullable();
+        table.text("descricao");
         table.integer("qtd_estoque").defaultTo(0);
         table.integer("volumes_por_unidade").notNullable();
         table.timestamps(true, true);
@@ -220,6 +221,7 @@ export async function down(knex) {
       .createTable("produtos", (table) => {
         table.increments("id").primary();
         table.string("nome").notNullable();
+        table.text("descricao");
         table.integer("qtd_estoque").defaultTo(0);
         table.integer("volumes_por_unidade").notNullable();
         table.timestamps(true, true);

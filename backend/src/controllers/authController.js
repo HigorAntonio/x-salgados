@@ -1,14 +1,18 @@
-import supabase from "../config/supabase.js";
+import supabase, { supabaseAdmin } from "../config/supabase.js";
 import knex from "../db.js";
-import { registerSchema, loginSchema } from "../schemas/authSchemas.js";
+import {
+  publicRegisterSchema,
+  adminRegisterSchema,
+  loginSchema,
+} from "../schemas/authSchemas.js";
 
 /**
- * Registro de novo usuário
+ * Registro público de novo usuário (COMPRADOR)
  *
  * Fluxo:
- * 1. Valida os dados do corpo da requisição usando Zod
+ * 1. Valida os dados (apenas email e password)
  * 2. Cria o usuário no Supabase Auth
- * 3. Insere o registro correspondente na tabela 'users' do banco local
+ * 3. Insere o registro na tabela 'users' com role fixo 'COMPRADOR'
  *
  * @param {Object} req - Request object
  * @param {Object} res - Response object
@@ -25,10 +29,13 @@ export async function register(req, res) {
     }
 
     // 1. Validação do corpo da requisição com Zod
-    const validatedData = registerSchema.parse(req.body);
-    const { email, password, role } = validatedData;
+    const validatedData = publicRegisterSchema.parse(req.body);
+    const { email, password } = validatedData;
 
-    // 2. Criar usuário no Supabase Auth
+    // 2. Role é SEMPRE 'COMPRADOR' para registro público
+    const role = "COMPRADOR";
+
+    // 3. Criar usuário no Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -48,13 +55,13 @@ export async function register(req, res) {
       });
     }
 
-    // 3. Inserir na tabela 'users' do banco local usando o UUID do Supabase
+    // 4. Inserir na tabela 'users' do banco local usando o UUID do Supabase
     try {
       const [newUser] = await knex("users")
         .insert({
           id: authData.user.id, // UUID do Supabase Auth
           email: authData.user.email,
-          role,
+          role, // Sempre COMPRADOR
         })
         .returning(["id", "email", "role", "created_at"]);
 
@@ -92,6 +99,121 @@ export async function register(req, res) {
 
     // Outros erros
     console.error("Erro no registro:", error);
+    return res.status(500).json({
+      error: "Erro interno do servidor",
+      message: error.message,
+    });
+  }
+}
+
+/**
+ * Registro administrativo de novo usuário (ADMIN ou MOTORISTA)
+ *
+ * Permite que um administrador crie usuários com roles ADMIN ou MOTORISTA
+ * sem deslogar da própria sessão, usando o Service Role do Supabase
+ *
+ * Requer: middleware authenticate + authorize(['ADMIN'])
+ *
+ * Fluxo:
+ * 1. Valida os dados (email, password e role)
+ * 2. Verifica se o role é ADMIN ou MOTORISTA
+ * 3. Usa admin.createUser do Supabase (Service Role)
+ * 4. Insere o registro na tabela 'users' do banco local
+ *
+ * @param {Object} req - Request object (req.user deve estar presente via middleware)
+ * @param {Object} res - Response object
+ */
+export async function adminRegisterUser(req, res) {
+  try {
+    // Verificar se o Supabase Admin está configurado
+    if (!supabaseAdmin) {
+      return res.status(503).json({
+        error: "Serviço administrativo não disponível",
+        message:
+          "Variável de ambiente SUPABASE_SERVICE_ROLE_KEY não está configurada",
+      });
+    }
+
+    // 1. Validação do corpo da requisição com Zod
+    const validatedData = adminRegisterSchema.parse(req.body);
+    const { email, password, role } = validatedData;
+
+    // 2. Criar usuário no Supabase Auth usando Service Role
+    // Isso permite criar usuários sem deslogar da sessão do admin
+    const { data: authData, error: authError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // Auto-confirmar email para usuários criados pelo admin
+      });
+
+    if (authError) {
+      return res.status(400).json({
+        error: "Erro ao criar usuário no Supabase",
+        message: authError.message,
+      });
+    }
+
+    if (!authData.user) {
+      return res.status(500).json({
+        error: "Erro ao criar usuário",
+        message: "Dados do usuário não retornados pelo Supabase",
+      });
+    }
+
+    // 3. Inserir na tabela 'users' do banco local usando o UUID do Supabase
+    try {
+      const [newUser] = await knex("users")
+        .insert({
+          id: authData.user.id, // UUID do Supabase Auth
+          email: authData.user.email,
+          role, // ADMIN ou MOTORISTA
+        })
+        .returning(["id", "email", "role", "created_at"]);
+
+      return res.status(201).json({
+        message: "Usuário criado com sucesso pelo administrador",
+        user: {
+          id: newUser.id, // UUID do Supabase
+          email: newUser.email,
+          role: newUser.role,
+          created_at: newUser.created_at,
+        },
+        created_by: {
+          id: req.user.id,
+          email: req.user.email,
+        },
+      });
+    } catch (dbError) {
+      // Se falhou ao inserir no banco local, tentar limpar o usuário do Supabase
+      console.error("Erro ao inserir usuário no banco local:", dbError);
+
+      // Tentar deletar o usuário do Supabase
+      try {
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+      } catch (deleteError) {
+        console.error("Erro ao fazer rollback do usuário:", deleteError);
+      }
+
+      return res.status(500).json({
+        error: "Erro ao salvar usuário no banco de dados",
+        message: dbError.message,
+      });
+    }
+  } catch (error) {
+    // Erro de validação do Zod
+    if (error.issues || error.name === "ZodError") {
+      return res.status(400).json({
+        error: "Erro de validação",
+        details: (error.issues || error.errors || []).map((err) => ({
+          field: err.path?.join(".") || "unknown",
+          message: err.message,
+        })),
+      });
+    }
+
+    // Outros erros
+    console.error("Erro no registro administrativo:", error);
     return res.status(500).json({
       error: "Erro interno do servidor",
       message: error.message,
@@ -254,6 +376,7 @@ export async function logout(req, res) {
 // Exportação para ES Modules
 export default {
   register,
+  adminRegisterUser,
   login,
   logout,
 };

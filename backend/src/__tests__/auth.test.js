@@ -36,6 +36,7 @@ const mockKnex = jest.fn(() => ({
 jest.unstable_mockModule("../config/supabase.js", () => ({
   default: mockSupabase,
   supabase: mockSupabase,
+  supabaseAdmin: null, // Admin não é usado nos testes básicos
 }));
 
 jest.unstable_mockModule("../db.js", () => ({
@@ -78,7 +79,7 @@ describe("Auth Endpoints", () => {
         .send({
           email: "newuser@example.com",
           password: "password123",
-          role: "COMPRADOR",
+          // Note: não enviamos role, será COMPRADOR automaticamente
         })
         .expect("Content-Type", /json/)
         .expect(201);
@@ -106,7 +107,6 @@ describe("Auth Endpoints", () => {
         .send({
           email: "invalid-email",
           password: "password123",
-          role: "COMPRADOR",
         })
         .expect("Content-Type", /json/)
         .expect(400);
@@ -121,7 +121,6 @@ describe("Auth Endpoints", () => {
         .send({
           email: "test@example.com",
           password: "123",
-          role: "COMPRADOR",
         })
         .expect("Content-Type", /json/)
         .expect(400);
@@ -129,18 +128,19 @@ describe("Auth Endpoints", () => {
       expect(response.body).toHaveProperty("error", "Erro de validação");
     });
 
-    it("should return 400 for invalid role", async () => {
+    it("should reject role field in request body", async () => {
       const response = await request(app)
         .post("/auth/register")
         .send({
           email: "test@example.com",
           password: "password123",
-          role: "INVALID_ROLE",
+          role: "ADMIN", // Tentar manipular role
         })
         .expect("Content-Type", /json/)
         .expect(400);
 
       expect(response.body).toHaveProperty("error", "Erro de validação");
+      // O schema não aceita role, então deve rejeitar
     });
 
     it("should return 400 when Supabase returns error", async () => {
@@ -154,7 +154,6 @@ describe("Auth Endpoints", () => {
         .send({
           email: "existing@example.com",
           password: "password123",
-          role: "COMPRADOR",
         })
         .expect("Content-Type", /json/)
         .expect(400);

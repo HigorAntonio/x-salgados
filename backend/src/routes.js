@@ -3,6 +3,7 @@ import knex from "./db.js";
 import authRoutes from "./routes/authRoutes.js";
 import exampleRoutes from "./routes/exampleRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import vehicleRoutes from "./routes/vehicleRoutes.js";
 
 const router = express.Router();
 
@@ -54,5 +55,8 @@ router.use("/examples", exampleRoutes);
 
 // Rotas de produtos
 router.use("/products", productRoutes);
+
+// Rotas de veículos
+router.use("/vehicles", vehicleRoutes);
 
 export default router;

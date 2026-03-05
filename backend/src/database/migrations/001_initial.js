@@ -74,6 +74,7 @@ export async function up(knex) {
       .createTable("veiculos", (table) => {
         table.increments("id").primary();
         table.string("tipo").notNullable(); // Ex: "Van Sprinter", "Caminhão 3/4"
+        table.string("placa").unique().notNullable(); // Placa do veículo
         table.integer("capacidade_em_volumes").notNullable();
         table.decimal("consumo_medio", 5, 2).notNullable(); // km/l
         table.integer("autonomia_max").notNullable(); // em km

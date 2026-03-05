@@ -109,6 +109,7 @@ O sistema visa automatizar a operação da empresa X Salgados, substituindo o fl
 #### Tabela: veiculos (Frota)
 - id: PK (Incremental)
 - tipo: String (Ex: "Van", "Caminhão 3/4")
+- placa: String (Unique, Not Null)
 - capacidade_em_volumes: Integer (Not Null)
 - consumo_medio: Decimal (5, 2) - em km/l
 - autonomia_max: Integer - em km
